@@ -1,0 +1,66 @@
+# Compiled binaries
+bin/
+obj/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+
+# Build results
+*.dll
+*.exe
+*.app
+*.log
+
+# Visual Studio Code
+.vscode/
+
+# Visual Studio settings
+.vs/
+*.dbmdl
+*.pdb
+*.cache
+*.ide
+
+# ASP.NET Core secrets
+**/appsettings.Development.json
+secrets.json
+
+# Rider
+.idea/
+
+# Test results
+TestResults/
+
+# DotCover
+*.dotCover
+
+# NCrunch
+*.ncrunch*
+.*crunch*.local.xml
+
+# Resharper
+_ReSharper*/
+*.DotSettings.user
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+project.lock.json
+project.fragment.lock.json
+
+# Entity Framework Migrations
+Migrations/
+
+# Logs
+*.log
+
+# Others
+*.swp
+*.tmp
+*.bak
+*.orig
+*.sln.docstates
