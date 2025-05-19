@@ -10,7 +10,9 @@ public static class ServiceEndpoints
 {
     public static void AddServiceEnpoints(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/servicos", async ([FromServices] IServiceService service) =>
+        RouteGroupBuilder serviceGroup = app.MapGroup("servicos").WithTags("Servicos");
+
+        serviceGroup.MapGet("/", async ([FromServices] IServiceService service) =>
         {
             var services = await service.GetAllAsync();
             return Results.Ok(services);
@@ -18,7 +20,7 @@ public static class ServiceEndpoints
         .WithName("GetServices")
         .WithOpenApi();
 
-        app.MapGet("/servicos/{id}", async ([FromServices] IServiceService service, [FromRoute] Guid id) =>
+        serviceGroup.MapGet("/{id:guid}", async ([FromServices] IServiceService service, [FromRoute] Guid id) =>
         {
             var result = await service.GetByIdAsync(id);
             return result is not null ? Results.Ok(result) : Results.NotFound();
@@ -26,23 +28,23 @@ public static class ServiceEndpoints
         .WithName("GetServiceById")
         .WithOpenApi();
 
-        app.MapPost("/servicos", async ([FromServices] IServiceService service, [FromBody] Service serv) =>
+        serviceGroup.MapPost("/", async ([FromServices] IServiceService service, [FromBody] Service serv) =>
         {
-            var created = await service.CreateAsync(serv);
+            Service? created = await service.CreateAsync(serv);
             return Results.Created($"/servicos/{created.Id}", created);
         })
         .WithName("PostService")
         .WithOpenApi();
 
-        app.MapPut("/servicos", async ([FromServices] IServiceService service, [FromBody] Service serv) =>
+        serviceGroup.MapPut("/{id:guid}", async ([FromServices] IServiceService service, [FromRoute] Guid id, [FromBody] Service serv) =>
         {
-            var updated = await service.UpdateAsync(serv);
-            return Results.Ok(updated);
+            var updated = await service.UpdateAsync(id, serv);
+            return updated ? Results.Ok(updated): Results.BadRequest();
         })
         .WithName("PutService")
         .WithOpenApi();
 
-        app.MapDelete("/servicos/{id}", async ([FromServices] IServiceService service, Guid id) =>
+        serviceGroup.MapDelete("/{id:guid}", async ([FromServices] IServiceService service, [FromRoute] Guid id) =>
         {
             await service.DeleteAsync(id);
             return Results.NoContent();

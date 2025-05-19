@@ -1,5 +1,6 @@
 ﻿using PetMaster.Domain.Entities;
 using PetMaster.Domain.Repositories;
+using PetMaster.Domain.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,30 +8,15 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace PetMaster.Domain.Services;
-public class ResponsibleService(IResponsibleRepository repository)
+public class ResponsibleService(IResponsibleRepository repository) : IResponsibleService
 {
-    public async Task<IEnumerable<Responsible>> GetAllAsync()
-    {
-        return await repository.GetAllAsync();
-    }
+    public async Task<IEnumerable<Responsible>> GetAllAsync() => await repository.GetAllAsync();
 
-    public async Task<Responsible?> GetByIdAsync(Guid id)
-    {
-        return await repository.GetByIdAsync(id);
-    }
+    public async Task<Responsible?> GetByIdAsync(Guid id) => await repository.GetByIdAsync(id);
 
-    public async Task<Responsible> CreateAsync(Responsible responsible)
-    {
-        return await repository.CreateAsync(responsible);
-    }
+    public async Task<Responsible> CreateAsync(Responsible responsible) => await repository.CreateAsync(responsible);
 
-    public async Task<Responsible> UpdateAsync(Responsible responsible)
-    {
-        return await repository.UpdateAsync(responsible);
-    }
+    public async Task<bool> UpdateAsync(Guid id, Responsible responsible) => await repository.UpdateAsync(id, responsible);
 
-    public async Task DeleteAsync(Guid id)
-    {
-        await repository.DeleteAsync(id);
-    }
+    public async Task DeleteAsync(Guid id) => await repository.DeleteAsync(id);
 }

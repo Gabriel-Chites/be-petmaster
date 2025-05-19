@@ -1,31 +1,48 @@
-﻿using PetMaster.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using PetMaster.Domain.Entities;
 using PetMaster.Domain.Repositories;
+using PetMaster.Infra.Context;
 
 namespace PetMaster.Infra.Repositories;
-public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : Entity, new()
+public abstract class RepositoryBase<T>(PetMasterContext context) 
+    : IRepositoryBase<T> where T 
+    : Entity
 {
-    public Task<T> CreateAsync(T entity)
+    private readonly PetMasterContext _context = context;
+
+    public async Task<T> CreateAsync(T entity)
     {
-        throw new NotImplementedException();
+        await _context.Set<T>().AddAsync(entity);
+        await _context.SaveChangesAsync();
+
+        return entity;
     }
 
-    public Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id) 
     {
-        throw new NotImplementedException();
+        await _context.Set<T>().Where(t => t.Id == id).ExecuteDeleteAsync(CancellationToken.None);
+        await _context.SaveChangesAsync();
     }
 
-    public Task<IEnumerable<T>> GetAllAsync()
-    {
-        throw new NotImplementedException();
-    }
+    public async Task<IEnumerable<T>> GetAllAsync() => await _context.Set<T>()
+        .AsNoTracking()
+        .ToListAsync(CancellationToken.None);
 
-    public Task<T?> GetByIdAsync(Guid id)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<T?> GetByIdAsync(Guid id) => _context.Set<T>()
+        .FirstOrDefaultAsync(t => t.Id == id, CancellationToken.None);
 
-    public Task<T> UpdateAsync(T entity)
+    public async Task<bool> UpdateAsync(Guid id, T entity)
     {
-        throw new NotImplementedException();
+        T? val = await GetByIdAsync(id);
+        
+        if (val is not null) 
+        {
+            _context.Entry(val).CurrentValues.SetValues(entity);
+            _context.Entry(val).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        return false;
     }
 }

@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using PetMaster.Domain.Entities;
+using PetMaster.Domain.Repositories;
+using PetMaster.Infra.Context;
 
 namespace PetMaster.Infra.Repositories;
-internal class UserRepository
+public class UserRepository(PetMasterContext context) 
+    : RepositoryBase<User>(context), IUserRepository
 {
 }

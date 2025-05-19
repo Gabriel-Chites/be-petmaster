@@ -8,28 +8,37 @@ public static class UserEnpoints
 {
     public static void AddUserEnpoints(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/usuarios", async ([FromServices] IUserService service) =>
+        RouteGroupBuilder serviceGroup = app.MapGroup("usuarios").WithTags("Usuários");
+
+        serviceGroup.MapGet("/", async ([FromServices] IUserService service) =>
         {
             IEnumerable<User> users = await service.GetAllAsync();
             return Results.Ok(users);
         }).WithName("GetUsers")
           .WithOpenApi();
 
-        app.MapPost("/usuarios", async ([FromServices] IUserService service, [FromBody] User user) =>
+        serviceGroup.MapGet("/{id:guid}", async ([FromServices] IUserService service, [FromRoute] Guid id) =>
+        {
+            User? user = await service.GetByIdAsync(id);
+            return user is not null ? Results.Ok(user) : Results.NotFound();
+        }).WithName("GetUserById")
+          .WithOpenApi();
+
+        serviceGroup.MapPost("/", async ([FromServices] IUserService service, [FromBody] User user) =>
         {
             User? created = await service.CreateAsync(user);
-            return Results.Created($"/usuarios/{created.Id}", created);
+            return created is not null ? Results.Created($"/usuarios/{created.Id}", created) : Results.BadRequest();
         }).WithName("PostUsers")
           .WithOpenApi();
 
-        app.MapPut("/usuarios/", async ([FromServices] IUserService service, [FromBody] User user) =>
+        serviceGroup.MapPut("/{id:guid}", async ([FromServices] IUserService service, [FromRoute] Guid id, [FromBody] User user) =>
         {
-            var updated = await service.UpdateAsync(user);
-            return Results.Ok(updated);
+            bool updated = await service.UpdateAsync(id, user);
+            return updated ? Results.Ok() : Results.BadRequest();
         }).WithName("PutUsers")
           .WithOpenApi();
 
-        app.MapDelete("/usuarios/", async ([FromServices] IUserService service, [FromRoute] Guid id) =>
+        serviceGroup.MapDelete("/{id:guid}", async ([FromServices] IUserService service, [FromRoute] Guid id) =>
         {
             await service.DeleteAsync(id);
             return Results.NoContent();
