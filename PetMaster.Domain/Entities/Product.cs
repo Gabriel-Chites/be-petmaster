@@ -7,6 +7,18 @@ using System.Threading.Tasks;
 namespace PetMaster.Domain.Entities;
 public class Product : Entity
 {
+    public Product(
+        string name,
+        decimal price,
+        int quantityInStock,
+        string supplier)
+    {
+        Name = name;
+        Price = price;
+        QuantityInStock = quantityInStock;
+        Supplier = supplier;
+    }
+
     public string Name { get; set; } = null!;
     public decimal Price { get; set; }
     public int QuantityInStock { get; set; }

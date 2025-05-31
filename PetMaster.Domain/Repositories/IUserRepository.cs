@@ -8,4 +8,5 @@ using System.Threading.Tasks;
 namespace PetMaster.Domain.Repositories;
 public interface IUserRepository : IRepositoryBase<User>
 {
+    Task<User?> GetByRegistrationNumberAsync(string registrationNumber);
 }

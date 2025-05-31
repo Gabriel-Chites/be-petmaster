@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PetMaster.Api.Models;
 using PetMaster.Domain.Entities;
 using PetMaster.Domain.Services.Interfaces;
 
@@ -12,29 +13,34 @@ public static class ResponsibleEnpoints
 
         serviceGroup.MapGet("/", async ([FromServices] IResponsibleService service) =>
         {
-            IEnumerable<Responsible> responsibles = await service.GetAllAsync();
-            return Results.Ok(responsibles);
+            var result = await service.GetAllAsync();
+            return Results.Ok(result.Data);
         }).WithName("GetResponsible")
           .WithOpenApi();
 
         serviceGroup.MapGet("/{id}", async ([FromServices] IResponsibleService service, [FromRoute] Guid id) =>
         {
-            Responsible? responsible = await service.GetByIdAsync(id);
-            return responsible is not null ? Results.Ok(responsible) : Results.NotFound();
+            var result = await service.GetByIdAsync(id);
+            return result.Success ? Results.Ok(result.Data!) : Results.NotFound();
         }).WithName("GetResponsibleById")
           .WithOpenApi();
 
-        serviceGroup.MapPost("/", async ([FromServices] IResponsibleService service, [FromBody] Responsible responsable) =>
+        serviceGroup.MapPost("/", async ([FromServices] IResponsibleService service, [FromBody] ResponsibleModel responsible) =>
         {
-            Responsible? created = await service.CreateAsync(responsable);
-            return created is not null ? Results.Created($"/servicos/{created.Id}", created) : Results.BadRequest();
+            var result = await service.CreateAsync((Responsible)responsible);
+            Responsible? responsibleCreated = null;
+
+            if (result.Data is Responsible r)
+                responsibleCreated = r;
+
+            return result.Success? Results.Created($"/servicos/{responsibleCreated!.Id}", responsibleCreated) : Results.BadRequest();
         }).WithName("PostResponsible")
           .WithOpenApi();
 
-        serviceGroup.MapPut("/{id}", async ([FromServices] IResponsibleService service, [FromRoute] Guid id, [FromBody] Responsible responsable) =>
+        serviceGroup.MapPut("/{id}", async ([FromServices] IResponsibleService service, [FromRoute] Guid id, [FromBody] ResponsibleModel responsable) =>
         {
-            var updated = await service.UpdateAsync(id, responsable);
-            return updated ? Results.Ok() : Results.BadRequest();
+            var result = await service.UpdateAsync(id, (Responsible)responsable);
+            return result.Success ? Results.Ok() : Results.BadRequest();
         }).WithName("PutResponsible")
           .WithOpenApi();
 

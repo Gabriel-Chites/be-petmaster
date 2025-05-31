@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PetMaster.Api.Models;
 using PetMaster.Domain.Entities;
 using PetMaster.Domain.Services.Interfaces;
 
@@ -12,29 +13,32 @@ public static class PetEnpoints
 
         serviceGroup.MapGet("/", async ([FromServices] IPetService service) =>
         {
-            IEnumerable<Pet> pets = await service.GetAllAsync();
-            return Results.Ok(pets);
+            var result = await service.GetAllAsync();
+            return result.Success ? Results.Ok(result.Data) : Results.BadRequest(result.Message);
         }).WithName("GetPets")
           .WithOpenApi();
 
         serviceGroup.MapGet("/{id:guid}", async([FromServices] IPetService service, [FromRoute] Guid id) =>
         {
-            Pet? pet = await service.GetByIdAsync(id);
-            return pet is not null ? Results.Ok(pet) : Results.NotFound();
+            var result = await service.GetByIdAsync(id);
+            return result.Success && result.Data is not null ? Results.Ok(result.Data) : Results.NotFound();
         }).WithName("GetPetById")
          .WithOpenApi();
 
-        serviceGroup.MapPost("/", async([FromServices] IPetService service, [FromBody] Pet pet) =>
+        serviceGroup.MapPost("/", async([FromServices] IPetService service, [FromBody] PetModel pet) =>
         {
-            Pet? created = await service.CreateAsync(pet);
-            return created is not null ? Results.Created($"/servicos/{created.Id}", created) : Results.BadRequest();
+            var result = await service.CreateAsync((Pet)pet);
+            Pet? created = null;
+            if (result.Data is Pet p)
+                created = p;
+            return result.Success ? Results.Created($"/pet/{created!.Id}", created) : Results.BadRequest(result.Message);
         }).WithName("PostPet")
           .WithOpenApi();
 
-        serviceGroup.MapPut("/{id:guid}", async([FromServices] IPetService service, [FromRoute] Guid id, [FromBody] Pet pet) =>
+        serviceGroup.MapPut("/{id:guid}", async([FromServices] IPetService service, [FromRoute] Guid id, [FromBody] PetModel pet) =>
         {
-            var updated = await service.UpdateAsync(id, pet);
-            return updated ? Results.Ok() : Results.BadRequest();
+            var result = await service.UpdateAsync(id, (Pet)pet);
+            return result.Success ? Results.Ok() : Results.BadRequest(result.Message);
         }).WithName("PutPet")
           .WithOpenApi();
 

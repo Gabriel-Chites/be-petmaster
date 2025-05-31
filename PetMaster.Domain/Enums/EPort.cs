@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace PetMaster.Domain.Enums;
 public enum EPort
 {
-    Small,
-    Medium, 
-    Big
+    Small = 1,
+    Medium = 2, 
+    Big = 3
 }

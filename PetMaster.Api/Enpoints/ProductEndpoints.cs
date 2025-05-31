@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PetMaster.Api.Models;
 using PetMaster.Domain.Entities;
 using PetMaster.Domain.Services.Interfaces;
 
@@ -12,29 +13,34 @@ public static class ProductEndpoints
 
         serviceGroup.MapGet("/", async ([FromServices] IProductService service) =>
         {
-            IEnumerable<Product> products = await service.GetAllAsync();
-            return Results.Ok(products);
+            var result = await service.GetAllAsync();
+            return Results.Ok(result.Data);
         }).WithName("GetProducts")
           .WithOpenApi();
 
         serviceGroup.MapGet("/{id:guid}", async ([FromServices] IProductService service, [FromRoute] Guid id) =>
         {
-            Product? product = await service.GetByIdAsync(id);
-            return product is not null ? Results.Ok(product) : Results.NotFound();
+            var result = await service.GetByIdAsync(id);
+            return result.Data is not null ? Results.Ok((Product)result.Data) : Results.NotFound();
         }).WithName("GetProductById")
           .WithOpenApi();
 
-        serviceGroup.MapPost("/", async ([FromServices] IProductService service, [FromBody] Product product) =>
+        serviceGroup.MapPost("/", async ([FromServices] IProductService service, [FromBody] ProductModel product) =>
         {
-            Product? created = await service.CreateAsync(product);
-            return created is not null ? Results.Created($"/servicos/{created.Id}", created) : Results.BadRequest();
+            var result = await service.CreateAsync((Product)product);
+            Product? productCreated = null;
+
+            if (result.Data is Product p)
+                productCreated = p;
+
+            return result.Success ? Results.Created($"/servicos/{productCreated!.Id}", productCreated) : Results.BadRequest();
         }).WithName("PostProduct")
           .WithOpenApi();
 
-        serviceGroup.MapPut("/{id:guid}", async ([FromServices] IProductService service, [FromRoute] Guid id, [FromBody] Product product) =>
+        serviceGroup.MapPut("/{id:guid}", async ([FromServices] IProductService service, [FromRoute] Guid id, [FromBody] ProductModel product) =>
         {
-            var updated = await service.UpdateAsync(id, product);
-            return updated ? Results.Ok() : Results.BadRequest();
+            var updated = await service.UpdateAsync(id, (Product)product);
+            return updated.Success ? Results.Ok() : Results.BadRequest();
         }).WithName("PutProduct")
           .WithOpenApi();
 

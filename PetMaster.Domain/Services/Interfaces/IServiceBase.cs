@@ -1,11 +1,12 @@
 ﻿using PetMaster.Domain.Entities;
+using PetMaster.Domain.Response;
 
 namespace PetMaster.Domain.Services.Interfaces;
 public interface IServiceBase<T> where T : Entity
 {
-    Task<IEnumerable<T>> GetAllAsync();
-    Task<T?> GetByIdAsync(Guid id);
-    Task<T> CreateAsync(T entity);
-    Task<bool> UpdateAsync(Guid id, T entity);
+    Task<Result> GetAllAsync();
+    Task<Result> GetByIdAsync(Guid id);
+    Task<Result> CreateAsync(T entity);
+    Task<Result> UpdateAsync(Guid id, T entity);
     Task DeleteAsync(Guid id);
 }

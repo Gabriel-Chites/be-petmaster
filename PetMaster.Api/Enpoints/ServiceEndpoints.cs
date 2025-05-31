@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using PetMaster.Api.Models;
 using PetMaster.Domain.Entities;
 using PetMaster.Domain.Services.Interfaces;
 using System.Runtime.CompilerServices;
@@ -14,8 +15,8 @@ public static class ServiceEndpoints
 
         serviceGroup.MapGet("/", async ([FromServices] IServiceService service) =>
         {
-            var services = await service.GetAllAsync();
-            return Results.Ok(services);
+            var result = await service.GetAllAsync();
+            return result.Success ? Results.Ok(result.Data) : Results.BadRequest(result.Message);
         })
         .WithName("GetServices")
         .WithOpenApi();
@@ -23,23 +24,26 @@ public static class ServiceEndpoints
         serviceGroup.MapGet("/{id:guid}", async ([FromServices] IServiceService service, [FromRoute] Guid id) =>
         {
             var result = await service.GetByIdAsync(id);
-            return result is not null ? Results.Ok(result) : Results.NotFound();
+            return result.Success && result.Data is not null ? Results.Ok(result.Data) : Results.NotFound();
         })
         .WithName("GetServiceById")
         .WithOpenApi();
 
-        serviceGroup.MapPost("/", async ([FromServices] IServiceService service, [FromBody] Service serv) =>
+        serviceGroup.MapPost("/", async ([FromServices] IServiceService service, [FromBody] ServiceModel serv) =>
         {
-            Service? created = await service.CreateAsync(serv);
-            return Results.Created($"/servicos/{created.Id}", created);
+            var result = await service.CreateAsync((Service)serv);
+            Service? created = null;
+            if (result.Data is Service s)
+                created = s;
+            return result.Success ? Results.Created($"/servicos/{created!.Id}", created) : Results.BadRequest(result.Message);
         })
         .WithName("PostService")
         .WithOpenApi();
 
-        serviceGroup.MapPut("/{id:guid}", async ([FromServices] IServiceService service, [FromRoute] Guid id, [FromBody] Service serv) =>
+        serviceGroup.MapPut("/{id:guid}", async ([FromServices] IServiceService service, [FromRoute] Guid id, [FromBody] ServiceModel serv) =>
         {
-            var updated = await service.UpdateAsync(id, serv);
-            return updated ? Results.Ok(updated): Results.BadRequest();
+            var result = await service.UpdateAsync(id, (Service)serv);
+            return result.Success ? Results.Ok() : Results.BadRequest(result.Message);
         })
         .WithName("PutService")
         .WithOpenApi();
