@@ -1,5 +1,10 @@
 using PetMaster.Api.Enpoints;
 using PetMaster.Api.Configuration;
+using PetMaster.Infra.Context;
+using Microsoft.EntityFrameworkCore;
+using System.Data;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,12 +24,25 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.AddResponsibleEnpoints();
 app.AddProductEnpoints();
 app.AddServiceEnpoints();
 app.AddPetEnpoints();
 app.AddUserEnpoints();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<PetMasterContext>();
+    var creator = db.Database.GetInfrastructure().GetService<IRelationalDatabaseCreator>() as RelationalDatabaseCreator;
+    if (!creator.Exists())
+    {
+        db.Database.Migrate();
+    }
+}
 
 app.Run();

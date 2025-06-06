@@ -50,11 +50,18 @@ public static class UserEnpoints
         }).WithName("FirstAccessUsers")
           .WithOpenApi();
 
-        serviceGroup.MapDelete("/{id:guid}", async ([FromServices] IUserService service, [FromRoute] Guid id) =>
+        serviceGroup.MapPut("login", async ([FromServices] IUserService service, [FromBody] LoginRequest request) =>
         {
-            await service.DeleteAsync(id);
-            return Results.NoContent();
-        }).WithName("DeleteUsers")
+            var result = await service.LoginAsync(request);
+            return result.Success ? Results.Ok(result) : Results.BadRequest(result);
+        }).WithName("Login")
           .WithOpenApi();
+
+        serviceGroup.MapDelete("/{id:guid}", async ([FromServices] IUserService service, [FromRoute] Guid id) =>
+            {
+                await service.DeleteAsync(id);
+                return Results.NoContent();
+            }).WithName("DeleteUsers")
+              .WithOpenApi();
     }
 }

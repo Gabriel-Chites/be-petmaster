@@ -10,7 +10,7 @@ public class User : Entity
         string? cRMV,
         string cPF,
         string store,
-        EUserType type)
+        EUserType type) 
     {
         Name = name;
         Phone = phone;
@@ -28,8 +28,9 @@ public class User : Entity
     public string CPF { get; set; } = null!;
     public string Store { get; set; } = null!;
     public string RegistrationNumber { get; set; } = string.Empty;
-    public string Password { get; private set; } = null!;
+    public string Password { get; set; } = null!;
     public EUserType Type { get; set; }
+    public bool FirstAccess { get; set; } = true;
 
     public void SetPassword(string password) => Password = password;
 }

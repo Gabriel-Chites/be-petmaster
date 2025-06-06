@@ -8,5 +8,6 @@ using System.Threading.Tasks;
 namespace PetMaster.Domain.Repositories;
 public interface IUserRepository : IRepositoryBase<User>
 {
+    Task<(bool CanAccess, bool? FirstAccess)> CanAccessAsync(string registrationNumber, string password);
     Task<User?> GetByRegistrationNumberAsync(string registrationNumber);
 }

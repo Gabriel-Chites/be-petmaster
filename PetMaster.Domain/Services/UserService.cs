@@ -49,4 +49,23 @@ public class UserService(IUserRepository repository) : IUserService
 
         return new Result(updated, updated ? "Senha atualizada com sucesso" : "Erro ao atualizar a senha");
     }
+
+    public async Task<Result> LoginAsync(LoginRequest request)
+    {
+        (bool canAccess, bool? firstAccess) = await repository.CanAccessAsync(request.RegistrationNumber, request.Password);
+        if (!canAccess)
+        {
+            return new Result(false, "Número de matrícula ou senha inválidos", new LoginResponse
+            {
+                CanAccess = canAccess,
+                FirstAccess = firstAccess
+            });
+        }
+
+        return new Result(true, "Login realizado com sucesso", new LoginResponse
+        {
+            CanAccess = canAccess,
+            FirstAccess = firstAccess
+        });
+    }
 }
